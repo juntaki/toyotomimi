@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/k0kubun/pp"
 )
 
 const radiruPlayerURL = "http://www3.nhk.or.jp/netradio/files/swf/rtmpe_ver2015.swf"
@@ -88,7 +86,6 @@ func GetRadiruStations() []Station {
 
 	config := getConfig("130") // TODO: Autodetect
 
-	pp.Println(config)
 	for i, s := range radiruStations {
 		ret[i] = &RadiruStation{
 			stationID: s,
@@ -138,7 +135,15 @@ func (r *RadiruStation) NextProgram() Program {
 }
 
 func (r *RadiruStation) StationName() string {
-	return r.stationID
+	switch r.stationID {
+	case "r1":
+		return "ラジオ第1"
+	case "r2":
+		return "ラジオ第2"
+	case "fm":
+		return "NHK-FM"
+	}
+	return ""
 }
 
 func (r *RadiruStation) url() string {
