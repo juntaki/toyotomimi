@@ -46,6 +46,11 @@ func (rec *Recorder) Record() {
 		strings.Replace(prog.title, "/", "_", -1)) // "/" is filepath separator
 	rlogger := logger.WithFields(logrus.Fields{"filename": filename})
 
+	if strings.Contains(prog.title, "休止中") {
+		rlogger.Info("Skipped.")
+		return
+	}
+
 	filepath := path.Join(rec.outputDir, filename)
 
 	rlogger.Debug("filepath: ", filepath)
