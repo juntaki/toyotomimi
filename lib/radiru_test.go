@@ -1,6 +1,9 @@
 package radiolib
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestRadiruStation(t *testing.T) {
 	s := GetRadiruStations()
@@ -11,4 +14,13 @@ func TestRadiruStation(t *testing.T) {
 	r := NewRecorder(s[0], "/tmp")
 	r.debug = true
 	r.Record()
+
+	p := s[0].NextProgram()
+	if (time.Now()).After(p.end) {
+		t.Fatal(p.end)
+	}
+
+	if s[0].StationName() == "" {
+		t.Fatal(s[0].StationName())
+	}
 }

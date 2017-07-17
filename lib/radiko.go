@@ -128,7 +128,7 @@ func (r *RadikoStation) url() string {
 		r.streamURL = items[0].Item
 	}
 
-	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 conn=S: conn=S: conn=S: conn=S:%s live=1",
+	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 conn=S: conn=S: conn=S: conn=S:%s live=1 timeout=10",
 		r.streamURL, playerURL, r.client.AuthToken())
 	return url
 }

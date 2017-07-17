@@ -55,8 +55,8 @@ func (rec *Recorder) Record() {
 	defer file.Close()
 
 	if p.start.After(time.Now()) {
+		rlogger.Info("Wait until program start", time.Until(p.start))
 		time.Sleep(time.Until(p.start))
-		rlogger.Info("Wait until program start")
 	}
 
 	b := make([]byte, 64*1024)
@@ -106,9 +106,9 @@ reconnect:
 		}
 	}
 
-	if p.end.After(time.Now()) {
-		time.Sleep(time.Until(p.end))
+	if p.end.After(time.Now()) && !rec.debug {
 		rlogger.Error("Wait until program end, due to some error")
+		time.Sleep(time.Until(p.end))
 	}
 	r.Close()
 }

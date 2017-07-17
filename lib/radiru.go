@@ -146,7 +146,7 @@ func (r *RadiruStation) StationName() string {
 }
 
 func (r *RadiruStation) url() string {
-	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 live=1",
+	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 live=1 timeout=10",
 		r.configURL, radiruPlayerURL)
 	return url
 }
