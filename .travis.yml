@@ -2,6 +2,8 @@ language: go
 go:
   - tip
 before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y swftools
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
