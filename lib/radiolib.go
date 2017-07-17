@@ -53,7 +53,8 @@ func (rec *Recorder) Record() {
 
 	file, err := os.Create(targetPath)
 	if err != nil {
-		rlogger.Fatal("Create", err)
+		rlogger.Error("Create", err)
+		return
 	}
 	defer file.Close()
 
@@ -68,52 +69,49 @@ func (rec *Recorder) Record() {
 	r, err := rtmp.Alloc()
 	defer r.Free()
 	r.Init()
-reconnect:
-	connect++
-	if connect > 4 {
-		rlogger.Error("Too much retry.")
-		goto fail
-	}
-	err = r.SetupURL(p.url)
-	if err != nil {
-		rlogger.Error("SetupURL failed", err)
-		goto reconnect
-	}
-	rlogger.Info("Start Recording")
-	err = r.Connect()
-	if err != nil {
-		rlogger.Error("Connect failed", err)
-		goto reconnect
-	}
-
+connect:
 	for {
-		size, err := r.Read(b)
-		if size <= 0 || err != nil {
-			rlogger.Error("Read failed, try reconnect", err)
-			r.Close()
-			goto reconnect
+		connect++
+		if connect > 4 {
+			rlogger.Error("Too much retry.")
+			return
 		}
 
-		wsize, err := file.Write(b[:size])
-		if size != wsize || err != nil {
-			rlogger.Error("Write failed, just ignore", err)
+		err = r.SetupURL(p.url)
+		if err != nil {
+			rlogger.Error("SetupURL failed", err)
+			continue connect
+		}
+		rlogger.Info("Start Recording")
+		err = r.Connect()
+		if err != nil {
+			rlogger.Error("Connect failed", err)
+			continue connect
 		}
 
-		if time.Now().After(p.end) {
-			rlogger.Info("End Recording")
-			break
-		}
+		for {
+			size, err := r.Read(b)
+			if size <= 0 || err != nil {
+				rlogger.Error("Read failed, try reconnect", err)
+				r.Close()
+				continue connect
+			}
 
-		if rec.debug && time.Now().After(start.Add(10*time.Second)) {
-			break
+			wsize, err := file.Write(b[:size])
+			if size != wsize || err != nil {
+				rlogger.Error("Write failed, just ignore", err)
+			}
+
+			if time.Now().After(p.end) {
+				rlogger.Info("End Recording")
+				break connect
+			}
+
+			if rec.debug && time.Now().After(start.Add(time.Second)) {
+				break connect
+			}
 		}
 	}
-
-	if p.end.After(time.Now()) && !rec.debug {
-		rlogger.Error("Wait until program end, due to some error")
-		time.Sleep(time.Until(p.end))
-	}
-fail:
 	r.Close()
 }
 
