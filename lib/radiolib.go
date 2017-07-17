@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,8 +40,10 @@ func NewRecorder(station Station, outputDir string) *Recorder {
 func (rec *Recorder) Record() {
 	start := time.Now()
 	p := rec.station.NextProgram()
+
 	filename := fmt.Sprintf("[%s][%s]%s.m4a",
-		p.start.Format("2006-0102-1504"), rec.station.StationName(), p.title)
+		p.start.Format("2006-0102-1504"), rec.station.StationName(),
+		strings.Replace(p.title, "/", "_", -1))
 	targetPath := path.Join(rec.outputDir, filename)
 
 	rlogger := logger.WithFields(logrus.Fields{
