@@ -67,7 +67,6 @@ reconnect:
 	r, _ := rtmp.Init()
 	r.SetupURL(p.url)
 	r.Connect()
-	defer r.Close()
 
 	for {
 		size, err := r.Read(b)
@@ -100,6 +99,7 @@ reconnect:
 		time.Sleep(time.Until(p.end))
 		rlogger.Error("Wait until program end, due to some error")
 	}
+	r.Close()
 }
 
 func RecordAll(outputDir string) {
