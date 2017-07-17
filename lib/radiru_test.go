@@ -8,7 +8,7 @@ func TestRadiruStation(t *testing.T) {
 		t.Fatal(len(s))
 	}
 
-	r := NewRecorder(s[0], "/home/juntaki/")
+	r := NewRecorder(s[0], "/tmp")
 	r.debug = true
 	r.Record()
 }
