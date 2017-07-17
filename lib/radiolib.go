@@ -2,11 +2,12 @@ package radiolib
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
+	"sync"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	rtmp "github.com/juntaki/go-librtmp"
 )
 
@@ -37,42 +38,56 @@ func NewRecorder(station Station, outputDir string) *Recorder {
 
 func (rec *Recorder) Record() {
 	start := time.Now()
-
 	p := rec.station.NextProgram()
 	filename := fmt.Sprintf("[%s][%s]%s.m4a",
 		p.start.Format("2006-0102-1504"), rec.station.StationName(), p.title)
 	targetPath := path.Join(rec.outputDir, filename)
 
+	rlogger := logger.WithFields(logrus.Fields{
+		"start": start,
+		"path":  targetPath,
+	})
+
 	file, err := os.Create(targetPath)
 	if err != nil {
-		log.Fatal(err)
+		rlogger.Fatal("Create", err)
 	}
 	defer file.Close()
 
-	// TODO: wait until start
+	if p.start.After(time.Now()) {
+		time.Sleep(time.Until(p.start))
+		rlogger.Info("Wait until program start")
+	}
 
+	b := make([]byte, 1024)
+	retry := 0
+
+reconnect:
+	rlogger.Info("Start Recording")
 	r, _ := rtmp.Init()
 	r.SetupURL(p.url)
 	r.Connect()
 	defer r.Close()
 
-	b := make([]byte, 1024)
 	for {
 		size, err := r.Read(b)
 		if size <= 0 || err != nil {
-			fmt.Println("read: ", size)
-			fmt.Println(err)
-			break
+			if retry > 3 {
+				rlogger.Error("Read failed", err)
+			}
+			rlogger.Error("Read failed, try reconnect", err)
+			r.Close()
+			retry++
+			goto reconnect
 		}
 
 		wsize, err := file.Write(b[:size])
 		if size != wsize || err != nil {
-			fmt.Println("write:", wsize, "!=", size)
-			fmt.Println(err)
-			break
+			rlogger.Error("Write failed, just ignore", err)
 		}
 
 		if time.Now().After(p.end) {
+			rlogger.Info("End Recording")
 			break
 		}
 
@@ -80,23 +95,28 @@ func (rec *Recorder) Record() {
 			break
 		}
 	}
+
+	if p.end.After(time.Now()) {
+		time.Sleep(time.Until(p.end))
+		rlogger.Error("Wait until program end, due to some error")
+	}
 }
 
 func RecordAll(outputDir string) {
-	for _, s := range getRadikoStations() {
+	var wg sync.WaitGroup
+	radiko := getRadikoStations()
+	radiru := GetRadiruStations()
+	stations := append(radiko, radiru...)
+	for _, s := range stations {
 		rec := NewRecorder(s, outputDir)
+		wg.Add(1)
 		go func(rec *Recorder) {
+			defer wg.Done()
 			for {
 				rec.Record()
 			}
 		}(rec)
+		time.Sleep(time.Second)
 	}
-	for _, s := range GetRadiruStations() {
-		rec := NewRecorder(s, outputDir)
-		go func(rec *Recorder) {
-			for {
-				rec.Record()
-			}
-		}(rec)
-	}
+	wg.Wait()
 }
