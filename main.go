@@ -1,8 +1,6 @@
 package main
 
-import (
-	"./lib"
-)
+import "github.com/juntaki/toyotomimi/lib"
 
 func main() {
 	radiolib.RecordAll("/home/juntaki/radio")
