@@ -63,12 +63,17 @@ func (rec *Recorder) Record() {
 	}
 
 	b := make([]byte, 64*1024)
-	retry := 0
+	connect := 0
 
 	r, err := rtmp.Alloc()
 	defer r.Free()
 	r.Init()
 reconnect:
+	connect++
+	if connect > 4 {
+		rlogger.Error("Too much retry.")
+		goto fail
+	}
 	err = r.SetupURL(p.url)
 	if err != nil {
 		rlogger.Error("SetupURL failed", err)
@@ -84,13 +89,8 @@ reconnect:
 	for {
 		size, err := r.Read(b)
 		if size <= 0 || err != nil {
-			if retry > 3 {
-				rlogger.Error("Read failed", err)
-				break
-			}
 			rlogger.Error("Read failed, try reconnect", err)
 			r.Close()
-			retry++
 			goto reconnect
 		}
 
@@ -113,6 +113,7 @@ reconnect:
 		rlogger.Error("Wait until program end, due to some error")
 		time.Sleep(time.Until(p.end))
 	}
+fail:
 	r.Close()
 }
 
