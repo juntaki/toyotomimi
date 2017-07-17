@@ -47,7 +47,8 @@ func (rec *Recorder) Record() {
 	rlogger := logger.WithFields(logrus.Fields{"filename": filename})
 
 	if strings.Contains(prog.title, "休止中") {
-		rlogger.Info("Skipped.")
+		rlogger.Info("Sleep until off-the-air")
+		time.Sleep(time.Until(prog.end))
 		return
 	}
 
