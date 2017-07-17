@@ -59,20 +59,31 @@ func (rec *Recorder) Record() {
 		rlogger.Info("Wait until program start")
 	}
 
-	b := make([]byte, 1024)
+	b := make([]byte, 64*1024)
 	retry := 0
 
+	r, err := rtmp.Alloc()
+	defer r.Free()
+	r.Init()
 reconnect:
+	err = r.SetupURL(p.url)
+	if err != nil {
+		rlogger.Error("SetupURL failed", err)
+		goto reconnect
+	}
 	rlogger.Info("Start Recording")
-	r, _ := rtmp.Init()
-	r.SetupURL(p.url)
-	r.Connect()
+	err = r.Connect()
+	if err != nil {
+		rlogger.Error("Connect failed", err)
+		goto reconnect
+	}
 
 	for {
 		size, err := r.Read(b)
 		if size <= 0 || err != nil {
 			if retry > 3 {
 				rlogger.Error("Read failed", err)
+				break
 			}
 			rlogger.Error("Read failed, try reconnect", err)
 			r.Close()
