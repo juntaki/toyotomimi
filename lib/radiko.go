@@ -11,9 +11,9 @@ import (
 	radiko "github.com/yyoshiki41/go-radiko"
 )
 
-const playerURL = "http://radiko.jp/apps/js/flash/myplayer-release.swf"
+const radikoPlayerURL = "http://radiko.jp/apps/js/flash/myplayer-release.swf"
 
-func getRadikoStations() []Station {
+func GetRadikoStations() []Station {
 	client, err := radiko.New("")
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func getRadikoStations() []Station {
 	ret := make([]Station, len(stations))
 
 	for i, s := range stations {
-		ret[i] = &RadikoStation{
+		ret[i] = &radikoStation{
 			client:    client,
 			station:   s,
 			nextIndex: 0,
@@ -43,39 +43,35 @@ func getRadikoStations() []Station {
 func authorize(client *radiko.Client) {
 	dir := "/tmp/"
 
-	// 1. Download a swf player.
 	swfPath := path.Join(dir, "myplayer.swf")
 	if err := radiko.DownloadPlayer(swfPath); err != nil {
 		log.Fatalf("Failed to download swf player. %s", err)
 	}
 
-	// 2. Using swfextract, create an authkey file from a swf player.
 	cmdPath, err := exec.LookPath("swfextract")
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	authKeyPath := path.Join(dir, "authkey.png")
 	if c := exec.Command(cmdPath, "-b", "12", swfPath, "-o", authKeyPath); err != c.Run() {
 		log.Fatalf("Failed to execute swfextract. %s", err)
 	}
 
-	// 4. Enables and sets the auth_token.
-	// After client.AuthorizeToken() has succeeded,
-	// the client has the enabled auth_token internally.
 	_, err = client.AuthorizeToken(context.Background(), authKeyPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-type RadikoStation struct {
+type radikoStation struct {
 	client    *radiko.Client // Use the same by all stations
 	station   radiko.Station
 	nextIndex int
 	streamURL string // for cache
 }
 
-func (r *RadikoStation) getStation() {
+func (r *radikoStation) getStation() {
 	stations, err := r.client.GetStations(context.Background(), time.Now())
 	if err != nil {
 		log.Fatal(err)
@@ -88,7 +84,7 @@ func (r *RadikoStation) getStation() {
 	}
 }
 
-func (r *RadikoStation) NextProgram() Program {
+func (r *radikoStation) NextProgram() Program {
 	programs := r.station.Progs.Progs
 	now := time.Now()
 
@@ -118,17 +114,17 @@ func (r *RadikoStation) NextProgram() Program {
 	}
 }
 
-func (r *RadikoStation) StationName() string {
+func (r *radikoStation) Name() string {
 	return r.station.Name
 }
 
-func (r *RadikoStation) url() string {
+func (r *radikoStation) url() string {
 	if r.streamURL == "" {
 		items, _ := radiko.GetStreamMultiURL(r.station.ID)
 		r.streamURL = items[0].Item
 	}
 
 	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 conn=S: conn=S: conn=S: conn=S:%s live=1 timeout=10",
-		r.streamURL, playerURL, r.client.AuthToken())
+		r.streamURL, radikoPlayerURL, r.client.AuthToken())
 	return url
 }

@@ -14,7 +14,7 @@ import (
 
 type Station interface {
 	NextProgram() Program
-	StationName() string
+	Name() string
 }
 
 type Program struct {
@@ -38,32 +38,33 @@ func NewRecorder(station Station, outputDir string) *Recorder {
 }
 
 func (rec *Recorder) Record() {
-	start := time.Now()
-	p := rec.station.NextProgram()
+	recordStart := time.Now()
+	prog := rec.station.NextProgram()
 
 	filename := fmt.Sprintf("[%s][%s]%s.m4a",
-		p.start.Format("2006-0102-1504"), rec.station.StationName(),
-		strings.Replace(p.title, "/", "_", -1))
-	targetPath := path.Join(rec.outputDir, filename)
+		prog.start.Format("2006-0102-1504"), rec.station.Name(),
+		strings.Replace(prog.title, "/", "_", -1)) // "/" is filepath separator
+	rlogger := logger.WithFields(logrus.Fields{"filename": filename})
 
-	rlogger := logger.WithFields(logrus.Fields{
-		"start": start,
-		"path":  targetPath,
-	})
+	filepath := path.Join(rec.outputDir, filename)
 
-	file, err := os.Create(targetPath)
+	rlogger.Debug("filepath: ", filepath)
+	rlogger.Debug("recordStart:", recordStart)
+	rlogger.Debug("program:", prog)
+
+	file, err := os.Create(filepath)
 	if err != nil {
-		rlogger.Error("Create", err)
+		rlogger.Error("Create failed, skipped. err=", err)
 		return
 	}
 	defer file.Close()
 
-	if p.start.After(time.Now()) {
-		rlogger.Info("Wait until program start", time.Until(p.start))
-		time.Sleep(time.Until(p.start))
+	if prog.start.After(time.Now()) {
+		rlogger.Info("Wait until program start. until=", time.Until(prog.start))
+		time.Sleep(time.Until(prog.start))
 	}
 
-	b := make([]byte, 64*1024)
+	buf := make([]byte, 64*1024)
 	connect := 0
 
 	r, err := rtmp.Alloc()
@@ -77,7 +78,7 @@ connect:
 			return
 		}
 
-		err = r.SetupURL(p.url)
+		err = r.SetupURL(prog.url)
 		if err != nil {
 			rlogger.Error("SetupURL failed", err)
 			continue connect
@@ -90,24 +91,25 @@ connect:
 		}
 
 		for {
-			size, err := r.Read(b)
+			size, err := r.Read(buf)
 			if size <= 0 || err != nil {
 				rlogger.Error("Read failed, try reconnect", err)
 				r.Close()
 				continue connect
 			}
 
-			wsize, err := file.Write(b[:size])
+			wsize, err := file.Write(buf[:size])
 			if size != wsize || err != nil {
 				rlogger.Error("Write failed, just ignore", err)
 			}
 
-			if time.Now().After(p.end) {
+			if time.Now().After(prog.end) {
 				rlogger.Info("End Recording")
 				break connect
 			}
 
-			if rec.debug && time.Now().After(start.Add(time.Second)) {
+			if rec.debug && time.Now().After(recordStart.Add(time.Second)) {
+				rlogger.Info("End Recording (debug)")
 				break connect
 			}
 		}
@@ -117,7 +119,7 @@ connect:
 
 func RecordAll(outputDir string) {
 	var wg sync.WaitGroup
-	radiko := getRadikoStations()
+	radiko := GetRadikoStations()
 	radiru := GetRadiruStations()
 	stations := append(radiko, radiru...)
 	for _, s := range stations {

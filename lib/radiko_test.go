@@ -6,7 +6,7 @@ import (
 )
 
 func TestRadikoStation(t *testing.T) {
-	s := getRadikoStations()
+	s := GetRadikoStations()
 	if len(s) == 0 {
 		t.Fatal(len(s))
 	}
@@ -20,7 +20,7 @@ func TestRadikoStation(t *testing.T) {
 		t.Fatal(p.end)
 	}
 
-	if s[0].StationName() == "" {
-		t.Fatal(s[0].StationName())
+	if s[0].Name() == "" {
+		t.Fatal(s[0].Name())
 	}
 }
