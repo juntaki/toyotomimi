@@ -44,7 +44,7 @@ func (r *radiruStation) setProgram() {
 	r.program = getProgram(r.stationID)
 }
 
-func (r *radiruStation) NextProgram() Program {
+func (r *radiruStation) NextProgram() program {
 	programs := r.program
 	now := time.Now()
 	for {
@@ -64,7 +64,7 @@ func (r *radiruStation) NextProgram() Program {
 			continue
 		}
 
-		return Program{
+		return program{
 			url:   r.url(),
 			title: p.Title,
 			start: start,

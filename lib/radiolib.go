@@ -13,11 +13,11 @@ import (
 )
 
 type Station interface {
-	NextProgram() Program
+	NextProgram() program
 	Name() string
 }
 
-type Program struct {
+type program struct {
 	url   string
 	title string
 	start time.Time

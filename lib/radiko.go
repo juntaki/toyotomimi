@@ -84,7 +84,7 @@ func (r *radikoStation) getStation() {
 	}
 }
 
-func (r *radikoStation) NextProgram() Program {
+func (r *radikoStation) NextProgram() program {
 	programs := r.station.Progs.Progs
 	now := time.Now()
 
@@ -105,7 +105,7 @@ func (r *radikoStation) NextProgram() Program {
 			continue
 		}
 
-		return Program{
+		return program{
 			url:   r.url(),
 			title: p.Title,
 			start: start,
