@@ -1,6 +1,6 @@
+language: go
 sudo: false
 dist: trusty
-language: go
 go:
   - tip
 addons:
@@ -8,11 +8,6 @@ addons:
     packages:
       - swftools
 before_install:
-  - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 script:
-  - $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
-env:
-  global:
-    secure: "OtAj8W2PIraxpqnDMNNZR/XO5x0YgRFQEl48aS27gx3qlkuCMpPJU8cxwYBnjojT5HaIIvod2jhO1izYBos339ZxnxqLwtz4fkJYJbJV/4uGCEswiqowfTgBL1DWskz3eTP74Ez+YxZ0CsvDhNcj04kNkuikGqZ5oZR7Q8yQ7isz0ZKLopBu459a1fHXJ9RJdbvJu43+oURvHfJE5VDjcYV0R4KApflIxX+cW/4jOs61GR0V+ex/7lqybsuLmX2AV9PPpQFguAsSTnS4BIB0XeUhhpNHWkm2BqYY5jA2GbwxgpJBpsLDR/NWY89k95a3eaoW02FAISuAm6a8/c5KMTWUFHDikYmMRT8IEFX7joOJS6Hokq0cztdYW3841cXHYPW/upwQPS1795/ewspQK5T6BE1ObmBHYk4Qo+w5GCl8wuZ0C9sZX/BY2DQcpRRZ66VxIAz5tgq7WqqLCuNBliSfXO+lZ+ydnnoSw0uSpN21pqXGMjBNpqQAhghGZnqvhLP+r0Uukuj6JYw4d9hwUsh+gKDnVkrwvpz1sXojNfhRcKWk0dO6D4nZQ26TGQcDuGn2Scv86Jfw4eiaZ6LFmvYbk3vLbvelbZckFfJrmxqF32Vz2qLvYUhVsRAtNv2Dgpaxcu0w3vCUU3VNhnaD6axi9dSB+BEctWTuPJy519A="
+  - $HOME/gopath/bin/goveralls -service=travis-ci
