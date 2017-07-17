@@ -81,3 +81,22 @@ func (rec *Recorder) Record() {
 		}
 	}
 }
+
+func RecordAll(outputDir string) {
+	for _, s := range getRadikoStations() {
+		rec := NewRecorder(s, outputDir)
+		go func(rec *Recorder) {
+			for {
+				rec.Record()
+			}
+		}(rec)
+	}
+	for _, s := range GetRadiruStations() {
+		rec := NewRecorder(s, outputDir)
+		go func(rec *Recorder) {
+			for {
+				rec.Record()
+			}
+		}(rec)
+	}
+}

@@ -109,9 +109,8 @@ func (r *RadiruStation) NextProgram() Program {
 	now := time.Now()
 	for {
 		if len(programs) == r.nextIndex {
-			// TODO: Refresh program
+			r.program = getStation(r.stationID)
 			r.nextIndex = 0
-			log.Fatal("Old program")
 		}
 		p := programs[r.nextIndex]
 		r.nextIndex++

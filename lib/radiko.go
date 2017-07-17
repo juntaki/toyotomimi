@@ -75,15 +75,27 @@ type RadikoStation struct {
 	streamURL string // for cache
 }
 
+func (r *RadikoStation) getStation() {
+	stations, err := r.client.GetStations(context.Background(), time.Now())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, s := range stations {
+		if r.station.Name == s.Name {
+			r.station = s
+		}
+	}
+}
+
 func (r *RadikoStation) NextProgram() Program {
 	programs := r.station.Progs.Progs
 	now := time.Now()
 
 	for {
 		if len(programs) == r.nextIndex {
-			// TODO: Refresh program
+			r.getStation()
 			r.nextIndex = 0
-			log.Fatal("Old program")
 		}
 		p := programs[r.nextIndex]
 		r.nextIndex++
