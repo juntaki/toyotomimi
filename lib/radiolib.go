@@ -75,6 +75,7 @@ func (rec *Recorder) Record() {
 	connect := 0
 
 	r, err := rtmp.Alloc()
+	r.LogSetLevel(6)
 	defer r.Free()
 connect:
 	for {
@@ -82,6 +83,7 @@ connect:
 		connect++
 		if connect > 1 {
 			rlogger.Info("Retry sleep 10")
+			rlogger.Info("Connected: ", r.IsConnected(), " Timedout: ", r.IsTimedout())
 			rec.station.Refresh()
 			time.Sleep(10 * time.Second)
 		}
@@ -109,6 +111,7 @@ connect:
 			size, err := r.Read(buf)
 			if size <= 0 || err != nil {
 				rlogger.Error("Read failed, try reconnect", err)
+				rlogger.Info("Connected: ", r.IsConnected(), " Timedout: ", r.IsTimedout())
 				r.Close()
 				continue connect
 			}

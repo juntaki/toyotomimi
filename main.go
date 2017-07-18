@@ -7,7 +7,7 @@ import (
 	"github.com/juntaki/toyotomimi/lib"
 )
 
-const version = "1.2"
+const version = "1.3"
 
 func main() {
 	if len(os.Args) != 2 {
