@@ -15,6 +15,7 @@ import (
 type Station interface {
 	NextProgram() program
 	Name() string
+	Refresh()
 }
 
 type program struct {
@@ -79,8 +80,15 @@ func (rec *Recorder) Record() {
 connect:
 	for {
 		connect++
+		if connect > 1 {
+			rlogger.Info("Retry sleep 10")
+			rec.station.Refresh()
+			time.Sleep(10 * time.Second)
+		}
 		if connect > 4 {
 			rlogger.Error("Too much retry.")
+			rlogger.Info("Wait until program end. until=", time.Until(prog.end))
+			time.Sleep(time.Until(prog.end))
 			return
 		}
 

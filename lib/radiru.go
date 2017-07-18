@@ -77,6 +77,9 @@ func (r *radiruStation) Name() string {
 	return radiruStationsMap[r.stationID]
 }
 
+func (r *radiruStation) Refresh() {
+}
+
 func (r *radiruStation) url() string {
 	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 live=1 timeout=10",
 		r.streamURL, radiruPlayerURL)

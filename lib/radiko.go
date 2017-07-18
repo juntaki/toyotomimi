@@ -114,6 +114,12 @@ func (r *radikoStation) NextProgram() program {
 	}
 }
 
+func (r *radikoStation) Refresh() {
+	logger.Info("Token refresh: ", r.client.AuthToken())
+	authorize(r.client)
+	logger.Info("NewToken: ", r.client.AuthToken())
+}
+
 func (r *radikoStation) Name() string {
 	return r.station.Name
 }
