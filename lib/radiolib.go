@@ -75,7 +75,7 @@ func (rec *Recorder) Record() {
 	connect := 0
 
 	r, err := rtmp.Alloc()
-	r.LogSetLevel(6)
+	r.LogSetLevel(4)
 	defer r.Free()
 connect:
 	for {
