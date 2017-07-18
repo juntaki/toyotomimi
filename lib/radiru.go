@@ -65,7 +65,6 @@ func (r *radiruStation) NextProgram() program {
 		}
 
 		return program{
-			url:   r.url(),
 			title: p.Title,
 			start: start,
 			end:   end,
@@ -80,7 +79,7 @@ func (r *radiruStation) Name() string {
 func (r *radiruStation) Refresh() {
 }
 
-func (r *radiruStation) url() string {
+func (r *radiruStation) URL() string {
 	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 live=1 timeout=10",
 		r.streamURL, radiruPlayerURL)
 	return url

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os/exec"
 	"path"
 	"time"
@@ -33,7 +34,7 @@ func GetRadikoStations() []Station {
 			client:    client,
 			station:   s,
 			nextIndex: 0,
-			streamURL: "",
+			streamURL: []radiko.URLItem{},
 		}
 	}
 
@@ -68,7 +69,7 @@ type radikoStation struct {
 	client    *radiko.Client // Use the same by all stations
 	station   radiko.Station
 	nextIndex int
-	streamURL string // for cache
+	streamURL []radiko.URLItem // for cache
 }
 
 func (r *radikoStation) getStation() {
@@ -106,7 +107,6 @@ func (r *radikoStation) NextProgram() program {
 		}
 
 		return program{
-			url:   r.url(),
 			title: p.Title,
 			start: start,
 			end:   end,
@@ -124,13 +124,11 @@ func (r *radikoStation) Name() string {
 	return r.station.Name
 }
 
-func (r *radikoStation) url() string {
-	if r.streamURL == "" {
-		items, _ := radiko.GetStreamMultiURL(r.station.ID)
-		r.streamURL = items[0].Item
+func (r *radikoStation) URL() string {
+	if len(r.streamURL) == 0 {
+		r.streamURL, _ = radiko.GetStreamMultiURL(r.station.ID)
 	}
-
 	url := fmt.Sprintf("%s swfUrl=%s swfVfy=1 conn=S: conn=S: conn=S: conn=S:%s live=1 timeout=10",
-		r.streamURL, radikoPlayerURL, r.client.AuthToken())
+		r.streamURL[rand.Intn(len(r.streamURL))].Item, radikoPlayerURL, r.client.AuthToken())
 	return url
 }

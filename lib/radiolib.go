@@ -16,10 +16,10 @@ type Station interface {
 	NextProgram() program
 	Name() string
 	Refresh()
+	URL() string
 }
 
 type program struct {
-	url   string
 	title string
 	start time.Time
 	end   time.Time
@@ -92,7 +92,7 @@ connect:
 			return
 		}
 
-		err = r.SetupURL(prog.url)
+		err = r.SetupURL(rec.station.URL())
 		if err != nil {
 			rlogger.Error("SetupURL failed", err)
 			continue connect
