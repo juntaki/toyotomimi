@@ -76,9 +76,9 @@ func (rec *Recorder) Record() {
 
 	r, err := rtmp.Alloc()
 	defer r.Free()
-	r.Init()
 connect:
 	for {
+		r.Init()
 		connect++
 		if connect > 1 {
 			rlogger.Info("Retry sleep 10")
@@ -92,12 +92,13 @@ connect:
 			return
 		}
 
-		err = r.SetupURL(rec.station.URL())
+		url := rec.station.URL()
+		err = r.SetupURL(url)
 		if err != nil {
 			rlogger.Error("SetupURL failed", err)
 			continue connect
 		}
-		rlogger.Info("Start Recording")
+		rlogger.Info("Start Recording url=", url)
 		err = r.Connect()
 		if err != nil {
 			rlogger.Error("Connect failed", err)
