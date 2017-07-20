@@ -11,7 +11,7 @@ Radiko.jpと、らじる★らじるの番組を全部録音します。
 Install with dependencies
 
 ~~~
-$ sudo apt install librtmp-dev swftools
+$ sudo apt install librtmp-dev
 $ go get github.com/juntaki/toyotomimi
 ~~~
 
@@ -30,5 +30,4 @@ $ ls outputDir
 
 ## Requirements
 
-swfextract
 librtmp-dev
