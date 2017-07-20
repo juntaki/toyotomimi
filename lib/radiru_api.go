@@ -1,5 +1,10 @@
 package radiolib
 
+// This source code is based on https://github.com/hitochan777/rajirec
+// rajirec License:
+//  Copyright (c) 2017 Hitoshi Otsuki
+//  Licensed under MIT (https://github.com/hitochan777/rajirec/blob/master/LICENSE.md)
+
 import (
 	"encoding/xml"
 	"fmt"
