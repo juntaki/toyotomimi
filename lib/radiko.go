@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"os/exec"
-	"path"
 	"sync"
 	"time"
 
@@ -76,24 +74,7 @@ func (rc *radikoClient) AuthToken() string {
 }
 
 func (rc *radikoClient) authorize() {
-	dir := "/tmp/"
-
-	swfPath := path.Join(dir, "myplayer.swf")
-	if err := radiko.DownloadPlayer(swfPath); err != nil {
-		log.Fatalf("Failed to download swf player. %s", err)
-	}
-
-	cmdPath, err := exec.LookPath("swfextract")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	authKeyPath := path.Join(dir, "authkey.png")
-	if c := exec.Command(cmdPath, "-b", "12", swfPath, "-o", authKeyPath); err != c.Run() {
-		log.Fatalf("Failed to execute swfextract. %s", err)
-	}
-
-	_, err = rc.client.AuthorizeToken(context.Background(), authKeyPath)
+	_, err := rc.client.AuthorizeToken(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
